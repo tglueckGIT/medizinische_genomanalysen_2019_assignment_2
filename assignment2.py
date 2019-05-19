@@ -2,7 +2,7 @@
 
 import vcf
 
-__author__ = 'XXX'
+__author__ = 'Glueck Tobias'
 
 
 class Assignment2:
@@ -13,72 +13,98 @@ class Assignment2:
         
 
     def get_average_quality_of_file(self):
-        '''
-        Get the average PHRED quality of all variants
-        :return:
-        '''    
-        print("TODO")
+        with open("chr22.vcf") as f:
+            c = 0
+            sum = 0
+            for line in f:
+                c += 1
+                if len(line.split("\t"))>4 and line.split("\t")[5].isdigit() == True:
+                    sum += int(line.split("\t")[5])
+            return(sum/c)
         
         
     def get_total_number_of_variants_of_file(self):
-        '''
-        Get the total number of variants
-        :return: total number of variants
-        '''
-        print("TODO")
+        with open("chr22.vcf") as f:
+            c = 0
+            for line in f:
+                if line.split("\t")[0] == "chr22":
+                    c += 1
+            return(c)
     
     
     def get_variant_caller_of_vcf(self):
-        '''
-        Return the variant caller name
-        :return: 
-        '''
-        print("TODO")
+        with open("chr22.vcf") as f:
+            for line in f:
+                if line.split("\t")[0] == "chr22":
+                    start = line.find("callsetnames=") + 13
+                    end = line.find("datasetsmissingcall=") - 1
+                    return(line[start:end])
+
+        
         
         
     def get_human_reference_version(self):
-        '''
-        Return the genome reference version
-        :return: 
-        '''
-        print("TODO")
+        with open("chr22.vcf") as f:
+            for line in f:
+                if line.split("\t")[0] == "chr22":
+                    start = line.find("difficultregion=") + 16
+                    if start == 15:
+                        continue
+                    end = line.find(";" , start) - 1
+                    return(line[start:end])
         
         
     def get_number_of_indels(self):
-        '''
-        Return the number of identified INDELs
-        :return:
-        '''
-        print("TODO")
+        indels = 0
+
+        for i in vcf.Reader(open("chr22.vcf", "r")):
+            if i.is_indel:
+                indels += 1
+        return indels
         
 
     def get_number_of_snvs(self):
-        '''
-        Return the number of SNVs
-        :return: 
-        '''
-        print("TODO")
+        snvs = 0
+
+        for i in vcf.Reader(open("chr22.vcf", "r")):
+            if i.is_snp:
+                snvs += 1
+        return snvs
         
     def get_number_of_heterozygous_variants(self):
-        '''
-        Return the number of heterozygous variants
-        :return: 
-        '''
-        print("TODO")
+        hetvar = 0
+
+        for i in vcf.Reader(open("chr22.vcf", "r")):
+                hetvar += i.num_het
+        return hetvar
         
     
     def merge_chrs_into_one_vcf(self):
-        '''
-        Creates one VCF containing all variants of chr21 and chr22
-        :return:
-        '''
-        print("TODO")
-        
-        print("Number of total variants")
-        
+        f1 = vcf.Reader(open("chr21.vcf"), "r")
+        f2 = vcf.Reader(open("chr22.vcf"), "r")
+        merge = vcf.Writer(open("chr21_chr22_merged.vcf", "w"), f1)
+
+        for file in [f1, f2]:
+            for line in file:
+                merge.write_record(line)
+
+        with open("chr21_chr22_merged.vcf") as f:
+            c = 0
+            for line in f:
+                if line.split("\t")[0] == "chr22":
+                    c += 1
+            return(c)
     
     def print_summary(self):
-        print("Print all results here")
+        print("Average quality: " + str(self.get_average_quality_of_file()))
+        print("Total number of variants: " + str(self.get_total_number_of_variants_of_file()))
+        print("Variant caller: " + str(self.get_variant_caller_of_vcf()))
+        print("Human reference version: " + (str(self.get_human_reference_version())))
+        print("Number of indels: " + str(self.get_number_of_indels()))
+        print("Number of snvs: " + str(self.get_number_of_snvs()))
+        print("Number of heterozygous variants: " + str(self.get_number_of_heterozygous_variants()))
+        print("Total number of variants in merge file: " + str(self.merge_chrs_into_one_vcf()))
+        
     
     
 def main():
