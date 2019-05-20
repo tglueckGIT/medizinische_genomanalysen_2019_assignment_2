@@ -13,7 +13,7 @@ class Assignment2:
         
 
     def get_average_quality_of_file(self):
-        with open("chr22.vcf") as f:
+        with open("chr22_new.vcf") as f:
             c = 0
             sum = 0
             for line in f:
@@ -24,7 +24,7 @@ class Assignment2:
         
         
     def get_total_number_of_variants_of_file(self):
-        with open("chr22.vcf") as f:
+        with open("chr22_new.vcf") as f:
             c = 0
             for line in f:
                 if line.split("\t")[0] == "chr22":
@@ -33,31 +33,31 @@ class Assignment2:
     
     
     def get_variant_caller_of_vcf(self):
-        with open("chr22.vcf") as f:
+        with open("chr22_new.vcf") as f:
             for line in f:
                 if line.split("\t")[0] == "chr22":
                     start = line.find("callsetnames=") + 13
-                    end = line.find("datasetsmissingcall=") - 1
+                    end = line.find("filt=") - 1
                     return(line[start:end])
 
         
         
         
     def get_human_reference_version(self):
-        with open("chr22.vcf") as f:
+        with open("chr22_new.vcf") as f:
             for line in f:
                 if line.split("\t")[0] == "chr22":
                     start = line.find("difficultregion=") + 16
                     if start == 15:
                         continue
-                    end = line.find(";" , start) - 1
+                    end = line.find("\n" , start) - 1
                     return(line[start:end])
         
         
     def get_number_of_indels(self):
         indels = 0
 
-        for i in vcf.Reader(open("chr22.vcf", "r")):
+        for i in vcf.Reader(open("chr22_new.vcf", "r")):
             if i.is_indel:
                 indels += 1
         return indels
@@ -66,7 +66,7 @@ class Assignment2:
     def get_number_of_snvs(self):
         snvs = 0
 
-        for i in vcf.Reader(open("chr22.vcf", "r")):
+        for i in vcf.Reader(open("chr22_new.vcf", "r")):
             if i.is_snp:
                 snvs += 1
         return snvs
@@ -74,19 +74,21 @@ class Assignment2:
     def get_number_of_heterozygous_variants(self):
         hetvar = 0
 
-        for i in vcf.Reader(open("chr22.vcf", "r")):
+        for i in vcf.Reader(open("chr22_new.vcf", "r")):
                 hetvar += i.num_het
         return hetvar
         
     
     def merge_chrs_into_one_vcf(self):
-        f1 = vcf.Reader(open("chr21.vcf"), "r")
-        f2 = vcf.Reader(open("chr22.vcf"), "r")
-        merge = vcf.Writer(open("chr21_chr22_merged.vcf", "w"), f1)
+        f1 = vcf.Reader(open("chr21_new.vcf"), "r")
+        f2 = vcf.Reader(open("chr22_new.vcf"), "r")
+        merge = vcf.Writer(open("chr21_chr22_merged.vcf", "w+"), f2)
 
-        for file in [f1, f2]:
-            for line in file:
-                merge.write_record(line)
+        for line in f1:
+            merge.write_record(line)
+
+        for line in f2:
+            merge.write_record(line)
 
         with open("chr21_chr22_merged.vcf") as f:
             c = 0
